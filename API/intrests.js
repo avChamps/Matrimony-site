@@ -25,11 +25,11 @@ router.post('/interests/sent', (req, res) => {
     const { userId } = req.body;
 
     const sql = `
-      SELECT p.* FROM personal_profiles p
+    SELECT p.*, i.receiver_status 
+      FROM personal_profiles p
       JOIN interests i ON p.id = i.receiver_id
       WHERE i.sender_id = ?
     `;
-
     db.query(sql, [userId], (err, results) => {
         if (err) return res.status(500).json({ error: 'Error fetching sent interests' });
         res.status(200).json({ data: results });
@@ -104,5 +104,18 @@ router.post('/interests/mutual', (req, res) => {
         res.status(200).json({ data: results });
     });
 });
+
+router.post('/refresh', (req, res) => {
+    const sql = `TRUNCATE TABLE interests`;
+
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error('Error truncating interests table:', err);
+            return res.status(500).json({ error: 'Error truncating interests table' });
+        }
+        res.status(200).json({ message: 'Interests table truncated successfully' });
+    });
+});
+
 
 module.exports = router;

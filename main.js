@@ -5,7 +5,7 @@ const profileRoutes = require('./API/profiles');
 const login = require('./API/auth');
 const intrests = require('./API/intrests')
 const cors = require('cors');
-const HOST = '192.168.243.169';
+const HOST = 'localhost';
 
 const app = express();
 app.use(bodyParser.json());
