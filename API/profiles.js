@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const bcrypt = require('bcrypt');
 
 router.post('/getProfiles', (req, res) => {
   const {
@@ -70,7 +71,27 @@ router.post('/getProfiles', (req, res) => {
 });
 
 
-const bcrypt = require('bcrypt');
+
+router.post('/myProfile', (req, res) => {
+  const { userId } = req.body;
+
+  if (!userId) {
+    return res.status(400).json({ error: 'userId is required' });
+  }
+
+  const sql = `SELECT * FROM personal_profiles WHERE id = ?`;
+  const params = [userId];
+
+  db.query(sql, params, (err, results) => {
+    if (err) {
+      console.error('Error fetching profiles:', err);
+      return res.status(500).json({ error: 'Failed to get profile' });
+    }
+
+    res.status(200).json({ data: results });
+  });
+});
+
 
 router.post('/saveProfile', async (req, res) => {
   const data = req.body;
