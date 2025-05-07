@@ -3,6 +3,8 @@ const router = express.Router();
 const db = require('../db');
 const bcrypt = require('bcrypt');
 
+const getProfileQuery = "id, full_name, date_of_birth,  gender,  marital_status,  have_children,  mother_tongue,  about_me,  height,  weight,  body_type,  complexion,  religion,  caste,  gothram,  zodiac_sign,  star,  smoking_status,  drinking_status,  diet_type,  profile_image_url,  created_at,  education,  profession,  location,  mobile_number ";
+
 router.post('/getProfiles', (req, res) => {
   const {
       gender,
@@ -79,7 +81,7 @@ router.post('/myProfile', (req, res) => {
     return res.status(400).json({ error: 'userId is required' });
   }
 
-  const sql = `SELECT * FROM personal_profiles WHERE id = ?`;
+  const sql = `SELECT ${getProfileQuery} FROM personal_profiles WHERE id = ?`;
   const params = [userId];
 
   db.query(sql, params, (err, results) => {
