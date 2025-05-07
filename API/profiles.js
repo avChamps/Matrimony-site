@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require('../db');
 const bcrypt = require('bcrypt');
 
-const getProfileQuery = "id, full_name, date_of_birth,  gender,  marital_status,  have_children,  mother_tongue,  about_me,  height,  weight,  body_type,  complexion,  religion,  caste,  gothram,  zodiac_sign,  star,  smoking_status,  drinking_status,  diet_type,  profile_image_url,  created_at,  education,  profession,  location,  mobile_number ";
+const getProfileQuery = "id, email, full_name,profile_for, date_of_birth,  gender,  marital_status,  have_children,  mother_tongue,  about_me,  height,  weight,  body_type,  complexion,  religion,  caste,  gothram,  zodiac_sign,  star,  smoking_status,  drinking_status,  diet_type,  profile_image_url,  created_at,  education,  profession,  location,  mobile_number ";
 
 router.post('/getProfiles', (req, res) => {
   const {
@@ -106,7 +106,7 @@ router.post('/saveProfile', async (req, res) => {
           full_name, date_of_birth, gender, marital_status, have_children,
           mother_tongue, about_me, height, weight, body_type, complexion,
           religion, caste, gothram, zodiac_sign, star,
-          smoking_status, drinking_status, diet_type, profile_image_url,
+          smoking_status, drinking_status, diet_type, profile_image_url,profile_for,
           education, profession, location,
           mobile_number, email, password
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -155,6 +155,74 @@ router.post('/saveProfile', async (req, res) => {
   }
 });
 
+router.post('/updateProfile', async (req, res) => {
+  const data = req.body;
+
+  try {
+    let hashedPassword = null;
+    if (data.password) {
+      hashedPassword = await bcrypt.hash(data.password, 10);
+    }
+
+    const sql = `
+      UPDATE personal_profiles SET
+        full_name = ?, date_of_birth = ?, gender = ?, marital_status = ?, have_children = ?,
+        mother_tongue = ?, about_me = ?, height = ?, weight = ?, body_type = ?, complexion = ?,
+        religion = ?, caste = ?, gothram = ?, zodiac_sign = ?, star = ?,
+        smoking_status = ?, drinking_status = ?, diet_type = ?, profile_image_url = ?, profile_for = ?,
+        education = ?, profession = ?, location = ?,
+        mobile_number = ?, email = ?
+        ${hashedPassword ? ', password = ?' : ''}
+      WHERE id = ?
+    `;
+
+    const values = [
+      `${data.firstName} ${data.lastName}`,
+      data.dob,
+      data.gender,
+      data.maritalStatus,
+      data.haveChildren === 'true',
+      data.motherTongue || 'N/A',
+      data.aboutMe,
+      data.height,
+      data.weight,
+      data.bodyType,
+      data.complexion,
+      data.religion,
+      data.caste,
+      data.gothram,
+      data.sign,
+      data.star,
+      data.smoking,
+      data.drinking,
+      data.diet,
+      data.profileImageUrl || '',
+      data.profileFor,
+      data.education,
+      data.profession,
+      data.location,
+      data.mobileNumber,
+      data.email,
+    ];
+
+    if (hashedPassword) {
+      values.push(hashedPassword);
+    }
+
+    values.push(data.id); // Final value is the profile ID for WHERE clause
+
+    db.query(sql, values, (err, result) => {
+      if (err) {
+        console.error('Error updating profile:', err);
+        return res.status(500).json({ error: 'Failed to update profile' });
+      }
+      res.status(200).json({ message: 'Profile updated successfully' });
+    });
+  } catch (error) {
+    console.error('Hashing error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 
 module.exports = router;
